@@ -1,0 +1,60 @@
+<div class="max-w-4xl mx-auto px-6 py-8 animate-fade-in-up">
+  <h1 class="text-3xl font-bold tracking-tight mb-8">Order History</h1>
+
+  @if (isLoading()) {
+    <div class="space-y-4">
+      @for (i of [1,2]; track i) {
+        <div class="skeleton h-32 w-full rounded-2xl"></div>
+      }
+    </div>
+  } @else if (orders().length === 0) {
+    <div class="text-center py-20">
+      <div class="w-16 h-16 mx-auto mb-4 bg-neutral-100 rounded-2xl flex items-center justify-center">
+        <svg class="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-neutral-800">No orders yet</h3>
+      <p class="text-neutral-500 mt-1 mb-6">Your order history will appear here</p>
+      <a routerLink="/" class="inline-flex px-6 py-3 bg-black text-white text-sm font-semibold rounded-xl hover:bg-neutral-800 transition-colors">
+        Start Shopping
+      </a>
+    </div>
+  } @else {
+    <div class="space-y-4">
+      @for (order of orders(); track order.id) {
+        <div class="bg-white rounded-2xl border border-neutral-200/60 overflow-hidden hover:border-neutral-300 transition-colors">
+          <div class="px-6 py-4 bg-neutral-50/50 border-b border-neutral-200/60 flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-4">
+              <span class="text-sm font-semibold">Order #{{ order.id }}</span>
+              <span class="text-xs text-neutral-500">{{ order.createdAt | date:'medium' }}</span>
+            </div>
+            <span class="text-sm font-bold">{{ getOrderTotal(order) }} MAD</span>
+          </div>
+          <div class="p-6">
+            <div class="space-y-3">
+              @for (item of order.orderItems; track item.id) {
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-neutral-100 rounded-lg flex items-center justify-center shrink-0">
+                      @if (item.product.thumbnail) {
+                        <img [src]="item.product.thumbnail" class="w-full h-full object-cover rounded-lg"/>
+                      } @else {
+                        <svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                      }
+                    </div>
+                    <div>
+                      <p class="font-medium">{{ item.product.title }}</p>
+                      <p class="text-neutral-500">Qty: {{ item.quantity }} × {{ item.price }} MAD</p>
+                    </div>
+                  </div>
+                  <span class="font-semibold">{{ item.price * item.quantity }} MAD</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

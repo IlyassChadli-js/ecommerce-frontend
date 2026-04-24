@@ -1,0 +1,61 @@
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
+import { LoginRequest } from '../../models/user.model';
+
+@Component({
+  selector: 'app-login',
+  imports: [FormsModule, RouterLink],
+  template: `
+    <div class="min-h-[calc(100vh-64px)] flex items-center justify-center px-6 py-12 animate-fade-in-up">
+      <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+          <div class="w-12 h-12 bg-black rounded-xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight">Welcome back</h1>
+          <p class="text-neutral-500 mt-1">Sign in to your account</p>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" class="bg-white rounded-2xl border border-neutral-200/60 p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-1.5">Email</label>
+            <input type="email" [(ngModel)]="credentials.email" name="email" required
+              placeholder="you&#64;example.com"
+              class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-1.5">Password</label>
+            <input type="password" [(ngModel)]="credentials.password" name="password" required
+              placeholder="••••••••"
+              class="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"/>
+          </div>
+          <button type="submit" [disabled]="auth.isLoading()"
+            class="w-full py-3.5 bg-black text-white text-sm font-semibold uppercase tracking-wider rounded-xl hover:bg-neutral-800 disabled:bg-neutral-400 transition-colors">
+            @if (auth.isLoading()) { Signing in... } @else { Sign In }
+          </button>
+        </form>
+
+        <p class="text-center text-sm text-neutral-500 mt-6">
+          Don't have an account?
+          <a routerLink="/register" class="font-semibold text-black hover:underline">Create one</a>
+        </p>
+      </div>
+    </div>
+  `
+})
+export class LoginComponent {
+  readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  credentials: LoginRequest = { email: '', password: '' };
+
+  onSubmit(): void {
+    if (!this.credentials.email || !this.credentials.password) return;
+    this.auth.login(this.credentials).subscribe({
+      next: () => this.router.navigate(['/'])
+    });
+  }
+}
