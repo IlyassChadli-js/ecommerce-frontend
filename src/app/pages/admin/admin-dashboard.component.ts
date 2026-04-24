@@ -96,7 +96,21 @@ export class AdminDashboardComponent implements OnInit {
           this.closeForm();
           this.loadProducts();
         },
-        error: () => { this.toast.error('Failed to create product'); this.isSaving.set(false); }
+        error: (err) => { 
+          console.error('Create product error:', err);
+          let msg = 'Failed to create product';
+          if (typeof err.error === 'string') {
+            msg = err.error;
+          } else if (err.error?.message) {
+            msg = err.error.message;
+          } else if (err.error?.error) {
+            msg = err.error.error;
+          } else if (err.message) {
+            msg = err.message;
+          }
+          this.toast.error(msg); 
+          this.isSaving.set(false); 
+        }
       });
     }
   }

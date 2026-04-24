@@ -13,6 +13,8 @@ export const authGuard: CanActivateFn = () => {
   }
 
   toast.error('Please log in to access this page');
-  router.navigate(['/login']);
+  // Get current route URL state
+  const state = router.routerState.snapshot;
+  router.navigate(['/login'], { queryParams: { returnUrl: state?.url || '/' } });
   return false;
 };

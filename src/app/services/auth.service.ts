@@ -2,7 +2,7 @@ import { Injectable, signal, computed, PLATFORM_ID, inject } from '@angular/core
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, map, catchError, throwError } from 'rxjs';
 import { User, LoginRequest, RegisterRequest } from '../models/user.model';
 import { environment } from '../../environments/environment';
 import { ToastService } from './toast.service';
@@ -59,17 +59,15 @@ export class AuthService {
 
   login(credentials: LoginRequest): Observable<User> {
     this._isLoading.set(true);
-    return this.http.post<User>(`${environment.apiUrl}/users/login`, credentials).pipe(
-      tap(user => {
-        // The backend returns a User object. We simulate a token from user data
-        // In production, the backend should return a JWT token
-        const simulatedToken = btoa(JSON.stringify({ id: user.id, email: user.email, role: user.role }));
-        this._token.set(simulatedToken);
-        this._currentUser.set(user);
-        this.saveToStorage(simulatedToken, user);
+    return this.http.post<{ token: string; user: User }>(`${environment.apiUrl}/users/login`, credentials).pipe(
+      tap(response => {
+        this._token.set(response.token);
+        this._currentUser.set(response.user);
+        this.saveToStorage(response.token, response.user);
         this._isLoading.set(false);
-        this.toast.success('Welcome back, ' + user.username + '!');
+        this.toast.success('Welcome back, ' + response.user.username + '!');
       }),
+      map(response => response.user),
       catchError(err => {
         this._isLoading.set(false);
         this.toast.error('Invalid email or password');

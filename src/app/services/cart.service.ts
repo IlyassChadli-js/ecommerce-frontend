@@ -1,16 +1,18 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, of, map } from 'rxjs';
 import { Cart, CartItem } from '../models/cart.model';
 import { AuthService } from './auth.service';
 import { ToastService } from './toast.service';
 import { environment } from '../../environments/environment';
+import { ProductService } from './product.service';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
+  private readonly productService = inject(ProductService);
   private readonly baseUrl = `${environment.apiUrl}/cart`;
 
   private readonly _cartItemCount = signal(0);
@@ -23,7 +25,17 @@ export class CartService {
 
   loadCart(): void {
     const userId = this.auth.getUserId();
-    if (!userId) return;
+    if (!userId) {
+      const stored = localStorage.getItem('guest_cart');
+      if (stored) {
+        try {
+          const cart = JSON.parse(stored) as Cart;
+          this._cart.set(cart);
+          this._cartItemCount.set(cart.cartItems?.reduce((sum, item) => sum + item.quantity, 0) ?? 0);
+        } catch (e) { }
+      }
+      return;
+    }
 
     this._isLoading.set(true);
     this.http.get<Cart>(`${environment.apiUrl}/users/${userId}/cart`).pipe(
@@ -48,8 +60,24 @@ export class CartService {
   addToCart(productId: number, quantity: number = 1): Observable<Cart> {
     const userId = this.auth.getUserId();
     if (!userId) {
-      this.toast.error('Please log in to add items to cart');
-      return throwError(() => new Error('Not authenticated'));
+      return this.productService.getById(productId).pipe(
+        tap(product => {
+          let cart = this._cart() || { id: 0, cartItems: [] };
+          const cartItems = [...cart.cartItems];
+          const existing = cartItems.find(i => i.product.id === productId);
+          if (existing) {
+            existing.quantity += quantity;
+          } else {
+            cartItems.push({ id: Date.now(), product, quantity });
+          }
+          cart = { ...cart, cartItems };
+          this._cart.set(cart);
+          this._cartItemCount.set(cart.cartItems.reduce((sum, item) => sum + item.quantity, 0));
+          localStorage.setItem('guest_cart', JSON.stringify(cart));
+          this.toast.success('Added to cart');
+        }),
+        map(() => this._cart()!)
+      );
     }
 
     const params = new HttpParams()
@@ -74,7 +102,19 @@ export class CartService {
 
   updateQuantity(productId: number, quantity: number): Observable<Cart> {
     const userId = this.auth.getUserId();
-    if (!userId) return throwError(() => new Error('Not authenticated'));
+    if (!userId) {
+      const cart = this._cart();
+      if (cart) {
+        const cartItems = [...cart.cartItems];
+        const item = cartItems.find(i => i.product.id === productId);
+        if (item) item.quantity = quantity;
+        const newCart = { ...cart, cartItems };
+        this._cart.set(newCart);
+        this._cartItemCount.set(newCart.cartItems.reduce((sum, item) => sum + item.quantity, 0));
+        localStorage.setItem('guest_cart', JSON.stringify(newCart));
+      }
+      return of(this._cart()!);
+    }
 
     const params = new HttpParams()
       .set('userId', userId.toString())
@@ -97,7 +137,18 @@ export class CartService {
 
   removeItem(productId: number): Observable<Cart> {
     const userId = this.auth.getUserId();
-    if (!userId) return throwError(() => new Error('Not authenticated'));
+    if (!userId) {
+      const cart = this._cart();
+      if (cart) {
+        const cartItems = cart.cartItems.filter(i => i.product.id !== productId);
+        const newCart = { ...cart, cartItems };
+        this._cart.set(newCart);
+        this._cartItemCount.set(newCart.cartItems.reduce((sum, item) => sum + item.quantity, 0));
+        localStorage.setItem('guest_cart', JSON.stringify(newCart));
+        this.toast.success('Item removed from cart');
+      }
+      return of(this._cart()!);
+    }
 
     const params = new HttpParams()
       .set('userId', userId.toString())
@@ -120,7 +171,13 @@ export class CartService {
 
   clearCart(): Observable<Cart> {
     const userId = this.auth.getUserId();
-    if (!userId) return throwError(() => new Error('Not authenticated'));
+    if (!userId) {
+      const newCart = { id: 0, cartItems: [] };
+      this._cart.set(newCart);
+      this._cartItemCount.set(0);
+      localStorage.removeItem('guest_cart');
+      return of(newCart);
+    }
 
     const params = new HttpParams().set('userId', userId.toString());
 
@@ -134,6 +191,24 @@ export class CartService {
         return throwError(() => err);
       })
     );
+  }
+
+  syncGuestCart(): void {
+    const stored = localStorage.getItem('guest_cart');
+    if (!stored) return;
+    const userId = this.auth.getUserId();
+    if (!userId) return;
+
+    try {
+      const cart = JSON.parse(stored) as Cart;
+      localStorage.removeItem('guest_cart');
+      if (!cart.cartItems || cart.cartItems.length === 0) return;
+
+      // Simple sync: add all local items to backend
+      cart.cartItems.forEach(item => {
+        this.addToCart(item.product.id, item.quantity).subscribe();
+      });
+    } catch (e) { }
   }
 
   getCartTotal(): number {

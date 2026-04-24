@@ -1,7 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 import { LoginRequest } from '../../models/user.model';
 
 @Component({
@@ -50,14 +51,25 @@ import { LoginRequest } from '../../models/user.model';
 export class LoginComponent {
   readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly cartService = inject(CartService);
   credentials: LoginRequest = { email: '', password: '' };
 
   onSubmit(): void {
     if (!this.credentials.email || !this.credentials.password) return;
     this.auth.login(this.credentials).subscribe({
       next: (user) => {
-        const target = user.role === 'ADMIN' ? '/admin' : '/';
-        this.router.navigate([target]);
+        // Sync guest cart to user's backend cart
+        this.cartService.syncGuestCart();
+        
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+        let target = user.role === 'ADMIN' ? '/admin' : '/';
+        
+        if (returnUrl && returnUrl !== '/') {
+           target = returnUrl;
+        }
+        
+        this.router.navigateByUrl(target);
       }
     });
   }

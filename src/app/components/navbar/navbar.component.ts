@@ -34,6 +34,12 @@ import { CartService } from '../../services/cart.service';
                class="text-sm font-medium text-neutral-500 hover:text-black transition-colors duration-200">
               Products
             </a>
+            @if (!auth.isAuthenticated()) {
+              <a routerLink="/terms" routerLinkActive="text-black" class="text-sm font-medium text-neutral-500 hover:text-black transition-colors duration-200">Terms</a>
+              <a routerLink="/privacy" routerLinkActive="text-black" class="text-sm font-medium text-neutral-500 hover:text-black transition-colors duration-200">Privacy</a>
+              <a routerLink="/about" routerLinkActive="text-black" class="text-sm font-medium text-neutral-500 hover:text-black transition-colors duration-200">About us</a>
+              <a routerLink="/contact" routerLinkActive="text-black" class="text-sm font-medium text-neutral-500 hover:text-black transition-colors duration-200">Contact us</a>
+            }
             @if (auth.isAuthenticated()) {
               <a routerLink="/orders" routerLinkActive="text-black"
                  class="text-sm font-medium text-neutral-500 hover:text-black transition-colors duration-200">
@@ -45,8 +51,8 @@ import { CartService } from '../../services/cart.service';
 
         <!-- Right Section -->
         <div class="flex items-center gap-3">
-          <!-- Cart (only for customers) -->
-          @if (auth.isAuthenticated() && !auth.isAdmin()) {
+          <!-- Cart (for customers and guests) -->
+          @if (!auth.isAdmin()) {
             <a routerLink="/cart" class="relative p-2 rounded-xl hover:bg-neutral-100 transition-colors duration-200 group">
               <svg class="w-5 h-5 text-neutral-600 group-hover:text-black transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -106,12 +112,18 @@ import { CartService } from '../../services/cart.service';
             } @else {
               <a routerLink="/" (click)="mobileOpen = false"
                  class="text-sm font-medium text-neutral-600 hover:text-black py-2">Products</a>
+              @if (!auth.isAuthenticated()) {
+                <a routerLink="/terms" (click)="mobileOpen = false" class="text-sm font-medium text-neutral-600 hover:text-black py-2">Terms</a>
+                <a routerLink="/privacy" (click)="mobileOpen = false" class="text-sm font-medium text-neutral-600 hover:text-black py-2">Privacy</a>
+                <a routerLink="/about" (click)="mobileOpen = false" class="text-sm font-medium text-neutral-600 hover:text-black py-2">About us</a>
+                <a routerLink="/contact" (click)="mobileOpen = false" class="text-sm font-medium text-neutral-600 hover:text-black py-2">Contact us</a>
+              }
               @if (auth.isAuthenticated()) {
                 <a routerLink="/orders" (click)="mobileOpen = false"
                    class="text-sm font-medium text-neutral-600 hover:text-black py-2">Orders</a>
-                <a routerLink="/cart" (click)="mobileOpen = false"
-                   class="text-sm font-medium text-neutral-600 hover:text-black py-2">Cart</a>
               }
+              <a routerLink="/cart" (click)="mobileOpen = false"
+                 class="text-sm font-medium text-neutral-600 hover:text-black py-2">Cart</a>
             }
           </div>
         </div>

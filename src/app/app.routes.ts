@@ -13,8 +13,7 @@ export const routes: Routes = [
   },
   {
     path: 'cart',
-    loadComponent: () => import('./pages/cart/cart.component').then(m => m.CartComponent),
-    canActivate: [authGuard]
+    loadComponent: () => import('./pages/cart/cart.component').then(m => m.CartComponent)
   },
   {
     path: 'checkout',
@@ -38,6 +37,22 @@ export const routes: Routes = [
   {
     path: 'register',
     loadComponent: () => import('./pages/register/register.component').then(m => m.RegisterComponent)
+  },
+  {
+    path: 'terms',
+    loadComponent: () => import('./pages/info/terms.component').then(m => m.TermsComponent)
+  },
+  {
+    path: 'privacy',
+    loadComponent: () => import('./pages/info/privacy.component').then(m => m.PrivacyComponent)
+  },
+  {
+    path: 'about',
+    loadComponent: () => import('./pages/info/about.component').then(m => m.AboutComponent)
+  },
+  {
+    path: 'contact',
+    loadComponent: () => import('./pages/info/contact.component').then(m => m.ContactComponent)
   },
   {
     path: '**',
