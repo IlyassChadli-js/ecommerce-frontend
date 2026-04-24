@@ -55,7 +55,10 @@ export class LoginComponent {
   onSubmit(): void {
     if (!this.credentials.email || !this.credentials.password) return;
     this.auth.login(this.credentials).subscribe({
-      next: () => this.router.navigate(['/'])
+      next: (user) => {
+        const target = user.role === 'ADMIN' ? '/admin' : '/';
+        this.router.navigate([target]);
+      }
     });
   }
 }
