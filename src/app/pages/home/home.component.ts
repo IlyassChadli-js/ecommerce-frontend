@@ -158,9 +158,6 @@ export class HomeComponent implements OnInit {
   }
 
   addToCart(product: Product): void {
-    if (!this.auth.isAuthenticated()) {
-      return;
-    }
     this.addingId.set(product.id);
     this.cartService.addToCart(product.id).subscribe({
       next: () => this.addingId.set(null),

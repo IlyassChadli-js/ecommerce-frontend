@@ -42,7 +42,7 @@ export class ProductDetailComponent implements OnInit {
 
   addToCart(): void {
     const p = this.product();
-    if (!p || !this.auth.isAuthenticated()) return;
+    if (!p) return;
     this.isAdding.set(true);
     this.cartService.addToCart(p.id, this.quantity()).subscribe({
       next: () => this.isAdding.set(false),
