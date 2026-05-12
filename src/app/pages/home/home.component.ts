@@ -12,7 +12,7 @@ import { Product } from '../../models/product.model';
   template: `
     <div class="animate-fade-in-up">
       <!-- Hero Section -->
-      <section class="relative overflow-hidden bg-black text-white">
+      <section class="relative overflow-hidden bg-orange-500 text-white">
         <div class="absolute inset-0 opacity-20">
           <div class="absolute top-20 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
           <div class="absolute bottom-10 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
@@ -22,7 +22,7 @@ import { Product } from '../../models/product.model';
             <p class="text-sm font-medium tracking-widest text-neutral-400 uppercase mb-4">New Collection</p>
             <h1 class="text-4xl md:text-6xl font-bold tracking-tight leading-tight mb-6">
               Curated for the
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-neutral-400">modern you</span>
+              <span class="text-transparent bg-clip-text bg-linear-to-r from-white to-neutral-400">modern you</span>
             </h1>
             <p class="text-lg text-neutral-400 mb-8 max-w-lg">
               Discover premium products handpicked for quality and style. Shop the latest trends with confidence.
@@ -115,7 +115,7 @@ import { Product } from '../../models/product.model';
                     <button
                       (click)="addToCart(product)"
                       [disabled]="product.stock === 0 || addingId() === product.id"
-                      class="px-4 py-2 bg-black text-white text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-neutral-800 disabled:bg-neutral-300 disabled:cursor-not-allowed transition-all duration-200 active:scale-95">
+                      class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-neutral-800 disabled:bg-neutral-300 disabled:cursor-not-allowed transition-all duration-200 active:scale-95">
                       @if (addingId() === product.id) {
                         <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
